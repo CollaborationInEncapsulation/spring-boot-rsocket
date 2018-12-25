@@ -1,0 +1,80 @@
+buildscript {
+	ext {
+		springBootVersion = '2.1.1.RELEASE'
+	}
+	repositories {
+		mavenCentral()
+	}
+	dependencies {
+	  	classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.7'
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+	}
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+apply plugin: 'com.google.protobuf'
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = 1.8
+
+repositories {
+	mavenCentral()
+  	jcenter()
+  	maven { url 'https://jitpack.io' }
+}
+
+
+dependencies {
+  	implementation ('io.rsocket.rpc:rsocket-rpc-core:0.2.12')
+  	compile ('com.google.protobuf:protobuf-java:3.6.1')
+	implementation ('com.github.CollaborationInEncapsulation.spring-boot-rsocket:spring-boot-starter-rsocket:0.0.1.RELEASE')
+	testImplementation('org.springframework.boot:spring-boot-starter-test')
+}
+
+sourceSets {
+	main {
+	  proto { srcDir 'src/main/proto' }
+	}
+
+	test {
+	  proto { srcDir 'src/test/proto' }
+	}
+}
+
+protobuf {
+	generatedFilesBaseDir = "${projectDir}/src/generated"
+
+	protoc {
+	  	artifact = 'com.google.protobuf:protoc:3.6.1'
+	}
+	plugins {
+	  	rsocketRpc {
+			artifact = "io.rsocket.rpc:rsocket-rpc-protobuf:0.2.12"
+	  	}
+	}
+	generateProtoTasks {
+	  	ofSourceSet('main')*.plugins {
+			rsocketRpc {}
+	  	}
+	}
+}
+
+idea {
+	module {
+		sourceDirs += file("src/main/proto")
+		sourceDirs += file("src/generated/main/java")
+		sourceDirs += file("src/generated/main/rsocketRpc")
+
+		generatedSourceDirs += file('src/generated/main/java')
+		generatedSourceDirs += file('src/generated/main/rsocketRpc')
+	}
+}
+
+clean {
+  	delete 'src/generated/main'
+}
