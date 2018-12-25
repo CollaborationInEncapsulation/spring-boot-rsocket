@@ -1,0 +1,5 @@
+dependencies {
+  compile project(':spring-boot-autoconfigure-rsocket')
+
+  compile 'org.springframework.boot:spring-boot-starter-webflux'
+}

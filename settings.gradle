@@ -1,0 +1,5 @@
+rootProject.name = 'demo'
+
+
+include 'spring-boot-autoconfigure-rsocket'
+include 'spring-boot-starter-rsocket'

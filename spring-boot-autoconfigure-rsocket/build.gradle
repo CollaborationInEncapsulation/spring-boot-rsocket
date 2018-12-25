@@ -1,0 +1,13 @@
+dependencies {
+
+  	implementation('io.rsocket:rsocket-core')
+  	implementation('io.rsocket:rsocket-transport-netty')
+
+  	annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+  	annotationProcessor("org.springframework.boot:spring-boot-autoconfigure-processor")
+
+  	compileClasspath('org.springframework.boot:spring-boot-starter-webflux')
+
+	testImplementation('org.springframework.boot:spring-boot-starter-test')
+	testImplementation('io.projectreactor:reactor-test')
+}

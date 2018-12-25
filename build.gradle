@@ -1,0 +1,48 @@
+buildscript {
+	ext {
+	  	springDependencyManagementPluginVersion = '1.0.7.BUILD-SNAPSHOT'
+	}
+	repositories {
+		mavenCentral()
+		maven { url "https://repo.spring.io/snapshot" }
+		maven { url "https://repo.spring.io/milestone" }
+	}
+	dependencies {
+	  	classpath "io.spring.gradle:dependency-management-plugin:$springDependencyManagementPluginVersion"
+	}
+}
+
+allprojects {
+
+	apply plugin: 'java'
+	apply plugin: 'eclipse'
+	apply plugin: 'io.spring.dependency-management'
+
+	group = 'io.rsocket.spring.boot'
+	version = '0.0.1.RELEASE'
+	sourceCompatibility = 1.8
+
+	repositories {
+		mavenCentral()
+		maven { url "https://repo.spring.io/snapshot" }
+		maven { url "https://repo.spring.io/milestone" }
+	}
+
+  	ext {
+	  springBootDependenciesVersion = "2.1.1.RELEASE"
+	  rSocketVersion = "0.11.14"
+	}
+
+	dependencyManagement {
+		imports {
+		  	mavenBom "org.springframework.boot:spring-boot-dependencies:$springBootDependenciesVersion"
+		}
+
+		dependencies {
+			dependencySet (group: "io.rsocket", version: rSocketVersion) {
+			  	entry "rsocket-core"
+			  	entry "rsocket-transport-netty"
+			}
+		}
+	}
+}
