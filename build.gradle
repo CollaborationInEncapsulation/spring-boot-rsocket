@@ -17,6 +17,7 @@ allprojects {
 	apply plugin: 'java'
 	apply plugin: 'eclipse'
 	apply plugin: 'io.spring.dependency-management'
+  	apply plugin: 'maven-publish'
 
 	group = 'io.rsocket.spring.boot'
 	version = '0.0.1.RELEASE'
@@ -42,6 +43,14 @@ allprojects {
 			dependencySet (group: "io.rsocket", version: rSocketVersion) {
 			  	entry "rsocket-core"
 			  	entry "rsocket-transport-netty"
+			}
+		}
+	}
+
+	publishing {
+		publications {
+			maven(MavenPublication) {
+			  from components.java
 			}
 		}
 	}

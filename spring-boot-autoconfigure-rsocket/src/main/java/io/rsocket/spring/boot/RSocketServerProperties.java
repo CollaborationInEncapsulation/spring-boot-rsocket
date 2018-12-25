@@ -4,7 +4,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "rsocket.server", ignoreUnknownFields = true)
 public class RSocketServerProperties {
-    private String path;
+    private String path = "/rs";
 
     public String getPath() {
         return path;

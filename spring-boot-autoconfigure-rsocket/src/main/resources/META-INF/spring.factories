@@ -1,0 +1,2 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  io.rsocket.spring.boot.RSocketWebServerFactoryAutoConfiguration

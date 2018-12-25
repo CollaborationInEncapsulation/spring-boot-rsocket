@@ -62,13 +62,15 @@ public class RSocketWebServerFactoryAutoConfiguration {
 		}
 
 		@Bean
-		public RSocketNettyReactiveWebServerFactory nettyReactiveWebServerFactory(
+		public RSocketNettyReactiveWebServerFactory rSocketNettyReactiveWebServerFactory(
 				ReactorResourceFactory resourceFactory,
+				RSocketServerProperties rSocketServerProperties,
 				SocketAcceptor socketAcceptor
 		) {
 			RSocketNettyReactiveWebServerFactory serverFactory = new RSocketNettyReactiveWebServerFactory();
 			serverFactory.setResourceFactory(resourceFactory);
 			serverFactory.setSocketAcceptor(socketAcceptor);
+			serverFactory.setPath(rSocketServerProperties.getPath());
 			return serverFactory;
 		}
 	}
