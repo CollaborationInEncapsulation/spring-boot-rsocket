@@ -20,18 +20,20 @@ allprojects {
   	apply plugin: 'maven-publish'
 
 	group = 'io.rsocket.spring.boot'
-	version = '0.0.1.RELEASE'
+	version = '0.0.2.BUILD-SNAPSHOT'
 	sourceCompatibility = 1.8
 
 	repositories {
 		mavenCentral()
 		maven { url "https://repo.spring.io/snapshot" }
 		maven { url "https://repo.spring.io/milestone" }
+		maven { url 'https://oss.jfrog.org/oss-snapshot-local' }
+		maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
 	}
 
   	ext {
-	  springBootDependenciesVersion = "2.1.1.RELEASE"
-	  rSocketVersion = "0.11.14"
+	  springBootDependenciesVersion = "2.1.3.RELEASE"
+	  rSocketVersion = "0.12.1-RC3-SNAPSHOT"
 	}
 
 	dependencyManagement {

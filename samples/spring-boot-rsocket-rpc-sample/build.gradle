@@ -26,11 +26,13 @@ repositories {
 	mavenCentral()
   	jcenter()
   	maven { url 'https://jitpack.io' }
+	maven { url 'https://oss.jfrog.org/oss-snapshot-local' }
+	maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
 }
 
 
 dependencies {
-  	implementation ('io.rsocket.rpc:rsocket-rpc-core:0.2.12')
+  	implementation ('io.rsocket.rpc:rsocket-rpc-core:0.2.14')
   	compile ('com.google.protobuf:protobuf-java:3.6.1')
 	implementation ('com.github.CollaborationInEncapsulation.spring-boot-rsocket:spring-boot-starter-rsocket:0.0.1.RELEASE')
 	testImplementation('org.springframework.boot:spring-boot-starter-test')
@@ -54,7 +56,7 @@ protobuf {
 	}
 	plugins {
 	  	rsocketRpc {
-			artifact = "io.rsocket.rpc:rsocket-rpc-protobuf:0.2.12"
+			artifact = "io.rsocket.rpc:rsocket-rpc-protobuf:0.2.14"
 	  	}
 	}
 	generateProtoTasks {
