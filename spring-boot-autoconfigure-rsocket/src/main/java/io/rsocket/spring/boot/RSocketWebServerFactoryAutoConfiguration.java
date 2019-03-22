@@ -16,6 +16,8 @@
 
 package io.rsocket.spring.boot;
 
+import java.util.Collection;
+
 import io.rsocket.SocketAcceptor;
 import reactor.netty.http.server.HttpServer;
 
@@ -65,12 +67,14 @@ public class RSocketWebServerFactoryAutoConfiguration {
 		public RSocketNettyReactiveWebServerFactory rSocketNettyReactiveWebServerFactory(
 				ReactorResourceFactory resourceFactory,
 				RSocketServerProperties rSocketServerProperties,
-				SocketAcceptor socketAcceptor
+				SocketAcceptor socketAcceptor,
+				Collection<RSocketReceiverCustomizer> customizers
 		) {
 			RSocketNettyReactiveWebServerFactory serverFactory = new RSocketNettyReactiveWebServerFactory();
 			serverFactory.setResourceFactory(resourceFactory);
 			serverFactory.setSocketAcceptor(socketAcceptor);
 			serverFactory.setPath(rSocketServerProperties.getPath());
+			serverFactory.setRSocketCustomizers(customizers);
 			return serverFactory;
 		}
 	}

@@ -22,7 +22,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import io.rsocket.RSocketFactory;
 import io.rsocket.SocketAcceptor;
+import io.rsocket.transport.ServerTransport;
+import io.rsocket.transport.netty.server.CloseableChannel;
+import io.rsocket.transport.netty.server.WebsocketRouteTransport;
 import reactor.netty.http.HttpProtocol;
 import reactor.netty.http.server.HttpServer;
 import reactor.netty.resources.LoopResources;
@@ -47,6 +51,8 @@ public class RSocketNettyReactiveWebServerFactory extends AbstractReactiveWebSer
 
 	private List<NettyServerCustomizer> serverCustomizers = new ArrayList<>();
 
+	private List<RSocketReceiverCustomizer> rSocketCustomizers = new ArrayList<>();
+
 	private boolean useForwardHeaders;
 
 	private ReactorResourceFactory resourceFactory;
@@ -64,9 +70,7 @@ public class RSocketNettyReactiveWebServerFactory extends AbstractReactiveWebSer
 
 	@Override
 	public WebServer getWebServer(HttpHandler httpHandler) {
-		HttpServer httpServer = createHttpServer();
-		ReactorHttpHandlerAdapter handlerAdapter = new ReactorHttpHandlerAdapter(httpHandler);
-		return new RSocketWebServer(httpServer, handlerAdapter, socketAcceptor, path);
+		return new RSocketWebServer(createRSocketStarter(httpHandler));
 	}
 
 	/**
@@ -105,6 +109,35 @@ public class RSocketNettyReactiveWebServerFactory extends AbstractReactiveWebSer
 	 */
 	public void setUseForwardHeaders(boolean useForwardHeaders) {
 		this.useForwardHeaders = useForwardHeaders;
+	}
+
+	/**
+	 * Returns a mutable collection of the {@link NettyServerCustomizer}s that will be
+	 * applied to the Netty server builder.
+	 * @return the customizers that will be applied
+	 */
+	public Collection<RSocketReceiverCustomizer> getRSocketCustomizers() {
+		return this.rSocketCustomizers;
+	}
+
+	/**
+	 * Set {@link RSocketReceiverCustomizer}s that should be applied to the Netty server
+	 * builder. Calling this method will replace any existing customizers.
+	 * @param rSocketCustomizers the customizers to set
+	 */
+	public void setRSocketCustomizers(
+		Collection<? extends RSocketReceiverCustomizer> rSocketCustomizers) {
+		Assert.notNull(rSocketCustomizers, "RSocketCustomizers must not be null");
+		this.rSocketCustomizers = new ArrayList<>(rSocketCustomizers);
+	}
+
+	/**
+	 * Add {@link RSocketReceiverCustomizer}s that should applied while building the server.
+	 * @param rSocketReceiverCustomizers the customizers to add
+	 */
+	public void addRSocketCustomizers(RSocketReceiverCustomizer... rSocketReceiverCustomizers) {
+		Assert.notNull(rSocketReceiverCustomizers, "RSocketCustomizer must not be null");
+		this.rSocketCustomizers.addAll(Arrays.asList(rSocketReceiverCustomizers));
 	}
 
 	/**
@@ -159,6 +192,23 @@ public class RSocketNettyReactiveWebServerFactory extends AbstractReactiveWebSer
 		return applyCustomizers(server);
 	}
 
+	@SuppressWarnings("unchecked")
+	private RSocketFactory.Start<CloseableChannel> createRSocketStarter(HttpHandler httpHandler) {
+		RSocketFactory.ServerRSocketFactory rSocketFactory = applyCustomizers(RSocketFactory.receive());
+
+
+		HttpServer httpServer = createHttpServer();
+		ReactorHttpHandlerAdapter handlerAdapter = new ReactorHttpHandlerAdapter(httpHandler);
+
+		return rSocketFactory
+			.acceptor(socketAcceptor)
+			.transport((ServerTransport) new WebsocketRouteTransport(
+				httpServer,
+				r -> r.route(hsr -> !("/" + hsr.path()).equals(path), handlerAdapter),
+				path
+			));
+	}
+
 	private HttpProtocol[] listProtocols() {
 		if (getHttp2() != null && getHttp2().isEnabled()) {
 			if (getSsl() != null && getSsl().isEnabled()) {
@@ -180,6 +230,13 @@ public class RSocketNettyReactiveWebServerFactory extends AbstractReactiveWebSer
 
 	private HttpServer applyCustomizers(HttpServer server) {
 		for (NettyServerCustomizer customizer : this.serverCustomizers) {
+			server = customizer.apply(server);
+		}
+		return server;
+	}
+
+	private RSocketFactory.ServerRSocketFactory applyCustomizers(RSocketFactory.ServerRSocketFactory server) {
+		for (RSocketReceiverCustomizer customizer : this.rSocketCustomizers) {
 			server = customizer.apply(server);
 		}
 		return server;

@@ -2,44 +2,27 @@ package io.rsocket.spring.boot;
 
 import io.rsocket.Closeable;
 import io.rsocket.RSocketFactory;
-import io.rsocket.SocketAcceptor;
 import io.rsocket.transport.netty.server.CloseableChannel;
-import io.rsocket.transport.netty.server.WebsocketRouteTransport;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import reactor.netty.ChannelBindException;
-import reactor.netty.http.server.HttpServer;
 
 import org.springframework.boot.web.embedded.netty.NettyWebServer;
 import org.springframework.boot.web.server.PortInUseException;
 import org.springframework.boot.web.server.WebServer;
 import org.springframework.boot.web.server.WebServerException;
-import org.springframework.http.server.reactive.ReactorHttpHandlerAdapter;
 import org.springframework.util.Assert;
 
 public class RSocketWebServer implements WebServer {
     private static final Log logger = LogFactory.getLog(NettyWebServer.class);
 
-    private final SocketAcceptor acceptor;
-
-    private final String path;
-
-    private final HttpServer httpServer;
-
-    private final ReactorHttpHandlerAdapter handlerAdapter;
+    private final RSocketFactory.Start<CloseableChannel> rSocketServer;
 
     private CloseableChannel disposableServer;
 
-    public RSocketWebServer(HttpServer httpServer,
-            ReactorHttpHandlerAdapter handlerAdapter,
-            SocketAcceptor socketAcceptor,
-            String path) {
-        acceptor = socketAcceptor;
-        this.path = path;
-        Assert.notNull(httpServer, "HttpServer must not be null");
-        Assert.notNull(handlerAdapter, "HandlerAdapter must not be null");
-        this.httpServer = httpServer;
-        this.handlerAdapter = handlerAdapter;
+    public RSocketWebServer(RSocketFactory.Start<CloseableChannel> rSocketServer) {
+        Assert.notNull(rSocketServer, "HttpServer must not be null");
+        this.rSocketServer = rSocketServer;
     }
 
     @Override
@@ -61,16 +44,8 @@ public class RSocketWebServer implements WebServer {
     }
 
     private CloseableChannel startHttpServer() {
-        return RSocketFactory.receive()
-                             .acceptor(acceptor)
-                             .transport(new WebsocketRouteTransport(
-                                 this.httpServer,
-                                 r -> r.route(hsr -> !("/" + hsr.path()).equals(path), handlerAdapter),
-                                 path
-                             ))
-                             .start()
-                             .cast(CloseableChannel.class)
-                             .block();
+        return rSocketServer.start()
+                            .block();
     }
 
     private ChannelBindException findBindException(Exception ex) {
